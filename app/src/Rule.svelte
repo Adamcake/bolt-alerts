@@ -183,7 +183,7 @@
                     <option value="cannontimer">Cannon Timer</option>
                     <option value="cindercore">Cinder Core</option>
                     <option value="clancitadel">Clan Citadel Buff</option>
-                    <option value="crystalmask">Crystal Mark</option>
+                    <option value="crystalmask">Crystal Mask</option>
                     <option value="darkness">Darkness</option>
                     <option value="noritualshard">Elven Ritual Shard Cooldown</option>
                     <option value="noexcalibur">Excalibur Cooldown</option>
