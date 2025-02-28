@@ -150,6 +150,8 @@ local buffs = {
   rockofresilience = {},
   valentinesflip = {},
   valentinesslam = {},
+  loveletter = {},
+  proteanpowerup = {},
   clancitadel = {},
   wiseperk = {},
   porter = {},
@@ -452,6 +454,12 @@ local rendericonlookup1 = {
     return nil, nil
   end,
 
+  [180] = function (event)
+    local x, y, z = event:modelvertexpoint(1, 1):get()
+    if x == -1 and y == 4 and z == -9 then return buffs.loveletter, nil end
+    return nil, nil
+  end,
+
   [210] = function (event)
     local x, y, z = event:modelvertexpoint(1, 1):get()
     if x == 8 and y == 68 and z == -32 then return buffs.firelighter, nil end
@@ -567,6 +575,12 @@ local rendericonlookup1 = {
     -- scripture of amascut
     local x, y, z = event:modelvertexpoint(1, 1):get()
     if x == -2 and y == 66 and z == 16 then return buffs.godbook, nil end
+    return nil, nil
+  end,
+
+  [2658] = function (event)
+    local x, y, z = event:modelvertexpoint(1, 1):get()
+    if x == -2 and y == 0 and z == 21 then return buffs.proteanpowerup, nil end
     return nil, nil
   end,
 

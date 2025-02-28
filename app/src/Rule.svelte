@@ -191,9 +191,11 @@
                     <option value="godbook">God Book</option>
                     <option value="grimoire">Grimoire</option>
                     <option value="hispecmonocle">Hi-spec Monocle</option>
+                    <option value="loveletter">Love Letter</option>
                     <option value="luminiteinjector">Luminite Injector</option>
                     <option value="materialmanual">Material Manual</option>
                     <option value="porter">Porter</option>
+                    <option value="proteanpowerup">Protean Powerup</option>
                     <option value="pulsecore">Pulse Core</option>
                     <option value="roarofosseous">Roar of Osseous</option>
                     <option value="rockofresilience">Rock of Resilience</option>
