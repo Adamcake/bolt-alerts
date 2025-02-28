@@ -2,6 +2,7 @@ export enum RuleType {
   afktimer = "afktimer",
   buff = "buff",
   chat = "chat",
+  craftingprogress = "craftingprogress",
   model = "model",
   popup = "popup",
   stat = "stat",

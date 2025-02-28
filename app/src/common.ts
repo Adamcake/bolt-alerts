@@ -7,6 +7,7 @@ export const getInitialAlertState = (
   switch (ruletype) {
     case RuleType.afktimer:
     case RuleType.buff:
+    case RuleType.craftingprogress:
     case RuleType.model:
     case RuleType.stat:
       return false;

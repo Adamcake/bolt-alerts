@@ -29,6 +29,7 @@
         (ruleType === RuleType.afktimer && number !== null) ||
         (ruleType === RuleType.buff && ref !== null && comparator !== null && (number !== null || comparator === 'active' || comparator === 'inactive')) ||
         (ruleType === RuleType.chat && find !== null) ||
+        (ruleType === RuleType.craftingprogress && number !== null) ||
         (ruleType === RuleType.model && ref !== null) ||
         (ruleType === RuleType.popup && find !== null) ||
         (ruleType === RuleType.stat && ref !== null && number !== null) ||
@@ -59,6 +60,9 @@
                 number = null;
                 break;
             case RuleType.xpgain:
+                number = null;
+                break;
+            case RuleType.craftingprogress:
                 number = null;
                 break;
         }
@@ -115,6 +119,7 @@
             <option class="text-black" value={RuleType.afktimer}>AFK timer</option>
             <option class="text-black" value={RuleType.buff}>Buffs/debuffs</option>
             <option class="text-black" value={RuleType.chat}>Chat text</option>
+            <option class="text-black" value={RuleType.craftingprogress}>Crafting progress</option>
             <option class="text-black" value={RuleType.model}>3D object</option>
             <option class="text-black" value={RuleType.popup}>Popup text</option>
             <option class="text-black" value={RuleType.stat}>Stat bars</option>
@@ -259,10 +264,19 @@
                     bind:value={find}
                 />
             {/if}
-        {:else if ruleType === RuleType.model}
-            <label for="8">Model:</label>
+        {:else if ruleType === RuleType.craftingprogress}
+            <label for="8">Threshold (percent):</label>
             <br>
-            <select id="8" bind:value={ref} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
+            <input
+                id="8"
+                type="number"
+                class="border-gray-200 text-[12pt] border-1 w-full max-w-[260px] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0"
+                bind:value={number}
+            />
+        {:else if ruleType === RuleType.model}
+            <label for="9">Model:</label>
+            <br>
+            <select id="9" bind:value={ref} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
                 <option class="text-black" value="lostsoul">Elidinis spirits</option>
                 <option class="text-black" value="eliteslayermob">Elite slayer mobs</option>
                 <option class="text-black" value="firespirit">Fire spirits</option>
@@ -270,36 +284,36 @@
                 <option class="text-black" value="serenspirit">Seren spirits</option>
             </select>
         {:else if ruleType === RuleType.stat}
-            <label for="9">Stat:</label>
+            <label for="a">Stat:</label>
             <br>
-            <select id="9" bind:value={ref} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
+            <select id="a" bind:value={ref} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
                 <option class="text-black" value="health">Health</option>
                 <option class="text-black" value="adrenaline">Adrenaline</option>
                 <option class="text-black" value="prayer">Prayer</option>
                 <option class="text-black" value="summoning">Summoning</option>
             </select>
             <br><br>
-            <label for="a">Threshold (percent):</label>
+            <label for="b">Threshold (percent):</label>
             <br>
             <input
-                id="a"
+                id="b"
                 type="number"
                 class="border-gray-200 text-[12pt] border-1 w-full max-w-[260px] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0"
                 bind:value={number}
             />
         {:else if ruleType === RuleType.xpgain}
-            <label for="b">Mode:</label>
+            <label for="c">Mode:</label>
             <br>
-            <select id="b" bind:value={xpGainModeIsTimeout} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
+            <select id="c" bind:value={xpGainModeIsTimeout} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
                 <option class="text-black" value={false}>Alert on XP gain</option>
                 <option class="text-black" value={true}>Alert on timeout</option>
             </select>
             {#if xpGainModeIsTimeout}
                 <br><br>
-                <label for="c">Timeout (seconds):</label>
+                <label for="d">Timeout (seconds):</label>
                 <br>
                 <input
-                    id="c"
+                    id="d"
                     type="number"
                     class="border-gray-200 text-[12pt] border-1 w-full max-w-[260px] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0"
                     bind:value={xpGainTimeoutValue}

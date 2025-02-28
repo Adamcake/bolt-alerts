@@ -284,6 +284,9 @@
                 }
             case RuleType.chat:
                 return `chat text: '${rule.exacttext ?? rule.find}'`;
+            case RuleType.craftingprogress:
+            if (typeof(rule.number) !== 'number') return 'crafting progress';
+                return `crafting progress: ${rule.number}%`;
             case RuleType.model:
                 return `3D model: '${rule.ref}'`;
             case RuleType.popup:

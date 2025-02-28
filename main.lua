@@ -23,6 +23,9 @@ local rulesets = {}
 -- - threshold: the value that the actual buff timer will be compared to by comparators (except active and inactive, which ignore this value)
 -- chat:
 -- - find: the lua pattern string that each new chat message will be compared to, sending an alert if it matches
+-- craftingprogress:
+-- - alert: true if a crafting menu exists that's past the threshold, OR if no crafting menu exists
+-- - threshold: a number between 0.0 and 1.0, for which an alert will be sent if the crafting progress exceeds this fraction
 -- model:
 -- - alert: whether the model is currently on-screen
 -- - ref: one of the entries in the models table
@@ -83,7 +86,7 @@ local models = {
   penguinagent = {center = bolt.point(0, 200, 0), boxsize = 450, boxthickness = 120}, -- 001 through 007, but not the disguised ones
   serenspirit = {center = bolt.point(0, 350, 0), boxsize = 400, boxthickness = 100},
   firespirit = {center = bolt.point(0, 300, 0), boxsize = 310, boxthickness = 105}, -- normal and divine
-  eliteslayermob = {center = bolt.point(0, 0, 0), boxsize = 500, boxthickness = 120}, -- the white ring around all elite slayer mobs
+  eliteslayermob = {center = bolt.point(0, 150, 0), boxsize = 500, boxthickness = 120}, -- the white ring around all elite slayer mobs
 }
 
 -- both buffs and debuffs go in this table
@@ -290,8 +293,11 @@ local messagehandlers = {
             comparator = buffcomparators[comparator]
           elseif type == 'stat' then
             ref = stats[ref]
-            threshold = threshold / 100.0
           end
+        end
+
+        if type == 'craftingprogress' or type == 'stat' then
+          threshold = threshold / 100.0
         end
 
         rules[ruleindex] = { id = ruleid, ruleset = ruleset, type = type, alert = alert, threshold = threshold, ref = ref, comparator = comparator, find = find }
@@ -713,6 +719,7 @@ local lastxpcheck = bolt.time()
 local xpcheckinterval = 100000 -- ten times per second
 local docheckxpgain = false
 local popupfound = false
+local craftingprogress = nil
 local lastpopupmessage = nil
 local mostrecentmessage = nil
 local checkchat = false
@@ -829,6 +836,13 @@ bolt.onrender2d(function (event)
           local x2, _ = event:vertexxy(i)
           local x1, _ = event:vertexxy(i + 2)
           bar.fraction = (x2 - (x1 + 1)) / 82.0
+        end
+      elseif aw == 6 and ah == 19 and vertexcount >= (i + verticesperimage) and event:texturecompare(ax, ay + 10, "\x11\x1e\x0d\xff\x22\x3c\x1a\xff\x33\x4b\x26\xff\x3b\x5d\x2d\xff\x3b\x5d\x2d\xff\x3b\x5d\x2d\xff") then
+        local ax2, ay2, aw2, ah2, _, _ = event:vertexatlasdetails(i + verticesperimage)
+        if aw2 == aw and ah2 == ah and event:texturecompare(ax2, ay2 + 10, "\x4d\x72\x3a\xff\x5b\x81\x43\xff\x5b\x81\x43\xff\x59\x7c\x41\xff\x20\x35\x18\xff\x1d\x19\x13\xff") then
+          local x1 = event:vertexxy(i + 2)
+          local x2 = event:vertexxy(i + verticesperimage)
+          craftingprogress = (x2 - x1) / 304.0
         end
       end
     end
@@ -959,6 +973,12 @@ local endcheckframe = function (t)
       if not rule.ref.foundoncheckframe then
         setrulealertstate(rule, false)
       end
+    elseif rule.type == "craftingprogress" then
+      if craftingprogress == nil or craftingprogress >= rule.threshold then
+        alertbyrule(rule)
+      else
+        setrulealertstate(rule, false)
+      end
     end
 
     if rule.alert then
@@ -968,6 +988,7 @@ local endcheckframe = function (t)
 
   didgainxp = false
   popupfound = false
+  craftingprogress = nil
 end
 
 bolt.onswapbuffers(function (event)
