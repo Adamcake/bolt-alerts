@@ -25,7 +25,7 @@ for i = 2, #arg do
   local filename = arg[i]
   if not filename:find(basedirpattern) then goto continue end
 
-  -- file contents that will go in the archiev
+  -- file contents that will go in the archive
   local content
   if filename:match("%.lua$") then
     local ast = p.parse(p.tokenizeFile(filename))
