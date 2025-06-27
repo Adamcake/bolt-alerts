@@ -43,6 +43,7 @@
         writeUint(list.length);
         for (const ruleset of list) {
             writeString(ruleset.id);
+            writeBool(ruleset.paused);
             writeBool(ruleset.alert);
             writeBool(ruleset.doFlashWindow);
             writeBool(ruleset.onlyIfUnfocused);
@@ -55,6 +56,7 @@
                 const hasRef = typeof(rule.ref) === 'string';
                 const hasComparator = typeof(rule.comparator) === 'string';
                 const hasFind = typeof(rule.find) === 'string';
+                writeBool(rule.paused);
                 writeBool(hasAlert);
                 if (hasAlert) writeBool(rule.alert === true);
                 writeBool(hasNumber);
@@ -88,6 +90,7 @@
                 $list[id] = {
                     id,
                     name: params.get('name')!,
+                    paused: oldRuleset ? oldRuleset.paused : false,
                     rules: oldRuleset ? oldRuleset.rules : {},
                     expanded: oldRuleset ? oldRuleset.expanded : false,
                     alert: oldRuleset ? oldRuleset.alert : false,
@@ -115,6 +118,7 @@
                 ruleset.rules[id] = {
                     id,
                     ruletype,
+                    paused: oldRule ? oldRule.paused : false,
                     alert: oldRule ? oldRule.alert : getInitialAlertState(ruletype, !!number),
                     number: number ? parseInt(number) : undefined,
                     ref: params.get('ref') ?? undefined,
@@ -179,8 +183,10 @@
             // save the config file to disk
             const config: ConfigRuleset[] = Object.values(rulesets).map((ruleset): ConfigRuleset => {return {
                 name: ruleset.name,
+                paused: ruleset.paused,
                 rules: Object.values(ruleset.rules).map((x: AlertRule): ConfigRule => {return {
                     ruletype: x.ruletype,
+                    paused: x.paused,
                     number: x.number,
                     ref: x.ref,
                     comparator: x.comparator,
@@ -246,14 +252,34 @@
         list.set(newList);
     };
 
+    const setRulesetAlertState = (ruleset: Ruleset) => {
+        ruleset.alert = false;
+        if (ruleset.paused) return;
+        for (const rule of Object.values(ruleset.rules)) {
+            if (rule.alert && !rule.paused) ruleset.alert = true;
+        }
+    };
+
     const deleteRule = (ruleset: Ruleset, rule: AlertRule) => {
         delete ruleset.rules[rule.id];
-        ruleset.alert = false;
-        for (rule of Object.values(ruleset.rules)) {
-            if (rule.alert) ruleset.alert = true;
-        }
+        setRulesetAlertState(ruleset);
         list.set($list);
     }
+
+    const togglePausedRule = (rule: AlertRule, ruleset: Ruleset) => {
+        rule.paused = !rule.paused;
+        if (rule.alert && rule.paused) {
+            rule.alert = false;
+            setRulesetAlertState(ruleset);
+        }
+        list.set($list);
+    };
+
+    const togglePausedRuleset = (ruleset: Ruleset) => {
+        ruleset.paused = !ruleset.paused;
+        setRulesetAlertState(ruleset);
+        list.set($list);
+    };
 
     const setExpanded = (ruleset: Ruleset, expanded: boolean) => {
         ruleset.expanded = expanded;
@@ -305,7 +331,7 @@
 
 <div>
     {#each Object.values($list) as ruleset, i}
-        <div class={"relative w-full text-[8pt] h-[19px] ".concat((ruleset.alert && globalFlashTimer) ? "bg-red-400" : (i & 1 ? "bg-gray-200" : "bg-gray-300"))}>
+        <div class={"relative w-full text-[8pt] h-[19px] ".concat(ruleset.paused ? "bg-gray-500" : ((ruleset.alert && globalFlashTimer) ? "bg-red-400" : (i & 1 ? "bg-gray-200" : "bg-gray-300")))}>
             {#if ruleset.expanded}
                 <button class="h-[14px] w-[14px] pointer-events-auto" onclick={() => setExpanded(ruleset, false)}><img src="plugin://app/images/caret-down-solid.svg" class="w-full h-full" alt="Hide" /></button>
             {:else}
@@ -327,7 +353,14 @@
                 <img src="plugin://app/images/gear-solid.svg" class="absolute top-[3px] left-[3px] w-[12px] h-[12px]" alt="Edit" />
             </button>
             <button
-                class="absolute rounded-lg right-[27px] top-0 h-[18px] w-[18px] hover:bg-emerald-400 pointer-events-auto py-0 by-0"
+                class="absolute rounded-lg right-[27px] top-0 h-[18px] w-[18px] hover:bg-blue-400 pointer-events-auto py-0 by-0"
+                onclick={() => togglePausedRuleset(ruleset)}
+                title={ruleset.paused ? "Resume" : "Pause"}
+            >
+                <img src={ruleset.paused ? "plugin://app/images/play-solid.svg" : "plugin://app/images/pause-solid.svg"} class="absolute top-[2px] left-[2px] w-[14px] h-[14px]" alt={ruleset.paused ? "Resume" : "Pause"} />
+            </button>
+            <button
+                class="absolute rounded-lg right-[40px] top-0 h-[18px] w-[18px] hover:bg-emerald-400 pointer-events-auto py-0 by-0"
                 onclick={() => openAddRuleMenu(ruleset)}
                 title="Add rule"
             >
@@ -336,7 +369,7 @@
         </div>
         {#if ruleset.expanded}
             {#each Object.values(ruleset.rules) as rule}
-                <div class={"relative px-1 w-full text-[8pt] h-[19px] ".concat((rule.alert && globalFlashTimer) ? "bg-red-400" : (i & 1 ? "bg-gray-200" : "bg-gray-300"))}>
+                <div class={"relative px-1 w-full text-[8pt] h-[19px] ".concat(rule.paused || ruleset.paused ? "bg-gray-500" : ((rule.alert && globalFlashTimer) ? "bg-red-400" : (i & 1 ? "bg-gray-200" : "bg-gray-300")))}>
                     {getRuleDescription(rule)}
                     <button
                         class="absolute rounded-lg right-0 top-0 h-[18px] w-[18px] hover:bg-red-500 pointer-events-auto py-0 by-0"
@@ -351,6 +384,13 @@
                         title="Edit"
                     >
                         <img src="plugin://app/images/gear-solid.svg" class="absolute top-[3px] left-[3px] w-[12px] h-[12px]" alt="Edit" />
+                    </button>
+                    <button
+                        class="absolute rounded-lg right-[27px] top-0 h-[18px] w-[18px] hover:bg-blue-400 pointer-events-auto py-0 by-0"
+                        onclick={() => togglePausedRule(rule, ruleset)}
+                        title={rule.paused ? "Resume" : "Pause"}
+                    >
+                        <img src={rule.paused ? "plugin://app/images/play-solid.svg" : "plugin://app/images/pause-solid.svg"} class="absolute top-[2px] left-[2px] w-[14px] h-[14px]" alt={rule.paused ? "Resume" : "Pause"} />
                     </button>
                 </div>
             {/each}

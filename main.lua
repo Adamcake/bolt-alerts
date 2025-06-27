@@ -269,15 +269,17 @@ local messagehandlers = {
     local ruleindex = 1
     for i = 1, rulesetcount do
       local rulesetid = readstring()
+      local rulesetpaused = readbool()
       local alert = readbool()
       local flashwindow = readbool()
       local onlyifunfocused = readbool()
-      local ruleset = { id = rulesetid, alert = alert, flashwindow = flashwindow, onlyifunfocused = onlyifunfocused }
+      local ruleset = { id = rulesetid, paused = rulesetpaused, alert = alert, flashwindow = flashwindow, onlyifunfocused = onlyifunfocused }
 
       local rulecount = readuint()
       for _ = 1, rulecount do
         local ruleid = readstring()
         local type = readstring()
+        local rulepaused = readbool()
         local alert = readoptional(readbool)
         local threshold = readoptional(readint)
         local ref = readoptional(readstring)
@@ -300,7 +302,7 @@ local messagehandlers = {
           threshold = threshold / 100.0
         end
 
-        rules[ruleindex] = { id = ruleid, ruleset = ruleset, type = type, alert = alert, threshold = threshold, ref = ref, comparator = comparator, find = find }
+        rules[ruleindex] = { id = ruleid, paused = rulepaused, ruleset = ruleset, type = type, alert = alert, threshold = threshold, ref = ref, comparator = comparator, find = find }
         ruleindex = ruleindex + 1
       end
       rulesets[i] = ruleset
@@ -379,7 +381,7 @@ local setrulealertstate = function (rule, state)
 end
 
 local alertbyrule = function (rule)
-  if rule.alert then return end
+  if rule.paused or rule.ruleset.paused or rule.alert then return end
   if rule.ruleset.onlyifunfocused and bolt.isfocused() then return end
   if rule.alert ~= nil then
     setrulealertstate(rule, true)

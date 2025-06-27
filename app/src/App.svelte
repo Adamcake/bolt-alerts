@@ -20,6 +20,7 @@
         rules[id] = {
           id,
           ruletype,
+          paused: rule.paused ?? false,
           alert: getInitialAlertState(ruletype, !!rule.number),
           number: rule.number,
           ref: rule.ref,
@@ -32,6 +33,7 @@
       ret[id] = {
         id,
         name: x.name,
+        paused: x.paused ?? false,
         rules,
         expanded: false,
         alert: false,

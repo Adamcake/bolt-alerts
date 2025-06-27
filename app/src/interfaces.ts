@@ -12,6 +12,7 @@ export enum RuleType {
 export interface AlertRule {
   id: string;
   ruletype: RuleType;
+  paused: boolean;
   alert?: boolean; // whether the rule is currently alerting, or null for rules that don't persist (e.g. new chat messages)
   number?: number; // threshold, in microseconds in the case of time-based thresholds
   ref?: string; // string that will be used to index object tables in lua
@@ -23,6 +24,7 @@ export interface AlertRule {
 export interface Ruleset {
   id: string;
   name: string;
+  paused: boolean;
   rules: { [id: string]: AlertRule };
   expanded: boolean; // whether this ruleset is expanded in the browser UI
   alert: boolean; // whether any rule in the set is currently alerting
@@ -34,6 +36,7 @@ export interface Ruleset {
 
 export interface ConfigRule {
   ruletype: string;
+  paused: boolean;
   number?: number;
   ref?: string;
   comparator?: string;
@@ -43,6 +46,7 @@ export interface ConfigRule {
 
 export interface ConfigRuleset {
   name: string;
+  paused: boolean;
   rules: ConfigRule[];
   doFlashWindow: boolean;
   sound?: string;
