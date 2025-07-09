@@ -79,7 +79,7 @@ local opentempbrowser = function (width, height, url)
   menubrowser:oncloserequest(function () menubrowser:close() end)
 end
 
--- todo: divine blessing (brooch), chronicle fragment (divination), elder chronicle (divination), forge phoenix & divine forge phoenix???, manifested knowledge,
+-- todo: divine blessing (brooch), chronicle fragment (divination), elder chronicle (divination), forge phoenix & divine forge phoenix???,
 -- divine carpet dust, guthixian butterfly, catalyst of alteration (bik book)
 local models = {
   lostsoul = {center = bolt.point(0, 600, 0), boxsize = 370, boxthickness = 115}, -- lost/unstable/vengeful
@@ -87,6 +87,7 @@ local models = {
   serenspirit = {center = bolt.point(0, 350, 0), boxsize = 400, boxthickness = 100},
   firespirit = {center = bolt.point(0, 300, 0), boxsize = 310, boxthickness = 105}, -- normal and divine
   eliteslayermob = {center = bolt.point(0, 150, 0), boxsize = 500, boxthickness = 120}, -- the white ring around all elite slayer mobs
+  manifestedknowledge = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true},
 }
 
 -- both buffs and debuffs go in this table
@@ -397,6 +398,14 @@ end
 local any3dobjectexists = false
 local any3dobjectfound = false
 local render3dlookup = {
+  [150] = function (event)
+    -- manifested knowledge
+    local anim = event:animated()
+    local x, y, z = event:vertexpoint(1):get()
+    if anim and x == -44 and y == 589 and z == -33 then return models.manifestedknowledge end
+    return nil
+  end,
+
   [672] = function (event)
     -- normal fire spirit
     local x, y, z = event:vertexpoint(1):get()
@@ -870,7 +879,11 @@ bolt.onrender3d(function (event)
     if model and model.dohighlight then
       any3dobjectfound = true
       if (bolt.time() % 600000) <= 480000 then
-        drawbox(model.center:transform(event:modelmatrix()), event:viewmatrix(), event:projectionmatrix(), model.boxsize, model.boxthickness)
+        local m = model.center
+        if model.anim then
+          m = m:transform(event:vertexanimation(1))
+        end
+        drawbox(m:transform(event:modelmatrix()), event:viewmatrix(), event:projectionmatrix(), model.boxsize, model.boxthickness)
       end
       if checkframe then
         model.foundoncheckframe = true

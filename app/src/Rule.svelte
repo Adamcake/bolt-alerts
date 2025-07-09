@@ -280,6 +280,7 @@
                 <option class="text-black" value="lostsoul">Elidinis spirits</option>
                 <option class="text-black" value="eliteslayermob">Elite slayer mobs</option>
                 <option class="text-black" value="firespirit">Fire spirits</option>
+                <option class="text-black" value="manifestedknowledge">Manifested Knowledge</option>
                 <option class="text-black" value="penguinagent">Penguin agents 001-007</option>
                 <option class="text-black" value="serenspirit">Seren spirits</option>
             </select>
