@@ -89,9 +89,11 @@ local models = {
   eliteslayermob = {center = bolt.point(0, 150, 0), boxsize = 500, boxthickness = 120}, -- the white ring around all elite slayer mobs
   manifestedknowledge = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true},
   chroniclefragment = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true}, -- also elder chronicle
+  runesphere = {center = bolt.point(0, 490, 0), boxsize = 350, boxthickness = 120, anim = true}, -- doesn't include the core (see runespherecore)
 
   -- billboard
   divineblessing = {center = bolt.point(0, 520, 0), boxsize = 300, boxthickness = 90},
+  runespherecore = {center = bolt.point(0, 340, 0), boxsize = 350, boxthickness = 120},
 }
 
 -- both buffs and debuffs go in this table
@@ -420,10 +422,24 @@ local render3dlookup = {
     return nil
   end,
 
+  [1200] = function (event)
+    -- runesphere (not the core, as that's a billboard)
+    local x, y, z = event:vertexpoint(1):get()
+    if x == 215 and y == 350 and z == 0 then return models.runesphere end
+    return nil
+  end,
+
   [1248] = function (event)
     -- divine fire spirit
     local x, y, z = event:vertexpoint(1):get()
     if x == 0 and y == 394 and z == 0 then return models.firespirit end
+    return nil
+  end,
+
+  [1533] = function (event)
+    -- runesphere (not the core, as that's a billboard)
+    local x, y, z = event:vertexpoint(1):get()
+    if x == -215 and y == 350 and z == 0 then return models.runesphere end
     return nil
   end,
 
@@ -456,6 +472,12 @@ local render3dlookup = {
 local anybillboardexists = false
 local anybillboardfound = false
 local renderbillboardlookup = {
+  [66] = function (event)
+    local r, g, b = event:vertexcolour(1)
+    if rougheqrgb(r, g, b, 239, 237, 59) then return models.runespherecore, nil end
+    return nil
+  end,
+
   [552] = function (event)
     local r, g, b = event:vertexcolour(1)
     if rougheqrgb(r, g, b, 127, 120, 52) then return models.divineblessing, nil end
