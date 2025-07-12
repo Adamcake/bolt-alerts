@@ -4,6 +4,7 @@ export enum RuleType {
   chat = "chat",
   craftingprogress = "craftingprogress",
   model = "model",
+  position = "position",
   popup = "popup",
   stat = "stat",
   xpgain = "xpgain",
@@ -19,6 +20,15 @@ export interface AlertRule {
   comparator?: string; // name of comparator function, for rule types that have comparators
   find?: string; // lua pattern string that incoming strings will be compared to
   exacttext?: string; // "exact" text to display to the user instead of the underlying pattern in the "find" field
+
+  regionX1?: number;
+  regionX2?: number;
+  regionY1?: number;
+  regionY2?: number;
+  regionH1?: number;
+  regionH2?: number;
+  regionHeightConstrained?: number;
+  regionIsInside?: boolean;
 }
 
 export interface Ruleset {
@@ -42,6 +52,15 @@ export interface ConfigRule {
   comparator?: string;
   find?: string;
   exacttext?: string;
+
+  regionX1?: number;
+  regionX2?: number;
+  regionY1?: number;
+  regionY2?: number;
+  regionH1?: number;
+  regionH2?: number;
+  regionHeightConstrained?: number;
+  regionIsInside?: boolean;
 }
 
 export interface ConfigRuleset {

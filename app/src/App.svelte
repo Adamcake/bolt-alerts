@@ -27,6 +27,13 @@
           comparator: rule.comparator,
           find: rule.find,
           exacttext: rule.exacttext,
+          regionX1: rule.regionX1,
+          regionX2: rule.regionX2,
+          regionY1: rule.regionY1,
+          regionY2: rule.regionY2,
+          regionH1: rule.regionH1,
+          regionH2: rule.regionH2,
+          regionIsInside: rule.regionIsInside,
         };
       }
       const id = randomUUID();

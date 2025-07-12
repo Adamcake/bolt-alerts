@@ -56,6 +56,13 @@
                 const hasRef = typeof(rule.ref) === 'string';
                 const hasComparator = typeof(rule.comparator) === 'string';
                 const hasFind = typeof(rule.find) === 'string';
+                const hasRegionX1 = typeof(rule.regionX1) === 'number';
+                const hasRegionX2 = typeof(rule.regionX2) === 'number';
+                const hasRegionY1 = typeof(rule.regionY1) === 'number';
+                const hasRegionY2 = typeof(rule.regionY2) === 'number';
+                const hasRegionH1 = typeof(rule.regionH1) === 'number';
+                const hasRegionH2 = typeof(rule.regionH2) === 'number';
+                const hasRegionIsInside = typeof(rule.regionIsInside) === 'boolean';
                 writeBool(rule.paused);
                 writeBool(hasAlert);
                 if (hasAlert) writeBool(rule.alert === true);
@@ -67,6 +74,20 @@
                 if (hasComparator) writeString(rule.comparator!);
                 writeBool(hasFind);
                 if (hasFind) writeString(rule.find!);
+                writeBool(hasRegionX1);
+                if (hasRegionX1) writeInt(rule.regionX1!);
+                writeBool(hasRegionX2);
+                if (hasRegionX2) writeInt(rule.regionX2!);
+                writeBool(hasRegionY1);
+                if (hasRegionY1) writeInt(rule.regionY1!);
+                writeBool(hasRegionY2);
+                if (hasRegionY2) writeInt(rule.regionY2!);
+                writeBool(hasRegionH1);
+                if (hasRegionH1) writeInt(rule.regionH1!);
+                writeBool(hasRegionH2);
+                if (hasRegionH2) writeInt(rule.regionH2!);
+                writeBool(hasRegionIsInside);
+                if (hasRegionIsInside) writeBool(rule.regionIsInside === true);
             }
         }
 
@@ -115,6 +136,13 @@
                 }
                 const number = params.get('number');
                 const ruletype = params.get('type')! as RuleType;
+                const regionX1 = params.get('region_x1');
+                const regionX2 = params.get('region_x2');
+                const regionY1 = params.get('region_y1');
+                const regionY2 = params.get('region_y2');
+                const regionH1 = params.get('region_h1');
+                const regionH2 = params.get('region_h2');
+                const regionIsInside = params.get('region_is_inside');
                 ruleset.rules[id] = {
                     id,
                     ruletype,
@@ -125,6 +153,13 @@
                     comparator: params.get('comparator') ?? undefined,
                     find: params.get('find') ?? undefined,
                     exacttext: params.get('exacttext') ?? undefined,
+                    regionX1: regionX1 ? parseInt(regionX1) : undefined,
+                    regionX2: regionX2 ? parseInt(regionX2) : undefined,
+                    regionY1: regionY1 ? parseInt(regionY1) : undefined,
+                    regionY2: regionY2 ? parseInt(regionY2) : undefined,
+                    regionH1: regionH1 ? parseInt(regionH1) : undefined,
+                    regionH2: regionH2 ? parseInt(regionH2) : undefined,
+                    regionIsInside: typeof(regionIsInside) === 'string' ? (regionIsInside !== '0') : undefined,
                 };
                 ruleset.expanded = true;
                 list.set(rulesets);
@@ -192,6 +227,13 @@
                     comparator: x.comparator,
                     find: x.find,
                     exacttext: x.exacttext,
+                    regionX1: x.regionX1,
+                    regionX2: x.regionX2,
+                    regionY1: x.regionY1,
+                    regionY2: x.regionY2,
+                    regionH1: x.regionH1,
+                    regionH2: x.regionH2,
+                    regionIsInside: x.regionIsInside,
                 }}),
                 doFlashWindow: ruleset.doFlashWindow,
                 sound: ruleset.sound,
@@ -242,6 +284,13 @@
         if (rule.comparator) params['comparator'] = rule.comparator;
         if (rule.find) params['find'] = rule.find;
         if (rule.exacttext) params['exacttext'] = rule.exacttext;
+        if (rule.regionX1) params['region_x1'] = rule.regionX1.toString();
+        if (rule.regionX2) params['region_x2'] = rule.regionX2.toString();
+        if (rule.regionY1) params['region_y1'] = rule.regionY1.toString();
+        if (rule.regionY2) params['region_y2'] = rule.regionY2.toString();
+        if (rule.regionH1) params['region_h1'] = rule.regionH1.toString();
+        if (rule.regionH2) params['region_h2'] = rule.regionH2.toString();
+        if (typeof(rule.regionIsInside) === 'boolean') params['region_is_inside'] = rule.regionIsInside ? '1' : '0';
         const body = '\x04\x00'.concat(new URLSearchParams(params).toString());
         fetch("https://bolt-api/send-message", { method: 'POST', body });
     };
@@ -317,6 +366,8 @@
                 return `3D model: '${rule.ref}'`;
             case RuleType.popup:
                 return `popup text: '${rule.exacttext ?? rule.find}'`;
+            case RuleType.position:
+                return 'player position';
             case RuleType.stat:
                 if (typeof(rule.number) !== 'number') return `stat '${rule.ref}'`;
                 return `stat '${rule.ref}' < ${rule.number}%`;

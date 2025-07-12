@@ -3,6 +3,8 @@ bolt.checkversion(1, 0)
 
 local base64 = require("base64")
 
+local unitspertile = 512
+
 local alertsfilename = "alerts.json"
 local cfgname = "config.ini"
 local cfg = {}
@@ -31,6 +33,10 @@ local rulesets = {}
 -- - ref: one of the entries in the models table
 -- popup:
 -- - find: the lua pattern string that each new popup message will be compared to, sending an alert if it matches
+-- position:
+-- - region{x,y}{1,2}: the lower and upper bounds, inclusive, of the region of tiles to alert on
+-- - regionh{1,2}: optionally, the lower and upper bounds of the height of the region to alert on
+-- - regionisinside: boolean, if true the rule will alert when inside the region, if false it will alert when outside the region
 -- stat:
 -- - alert: whether the alert condition is currently met
 -- - ref: one of the entries in the stats table
@@ -67,16 +73,45 @@ local browser = (function ()
 end)()
 browser:oncloserequest(bolt.close)
 
+local updatecoordsnoop = function (_, _, _) end
+local updatecoordsinbrowser = updatecoordsnoop
+local forceupdatecoords = false
+local browserisgettingcoords = false
 local opentempbrowser = function (width, height, url)
   local menubrowser = bolt.createbrowser(width, height, url)
   local done = false
-  menubrowser:onmessage(function (message)
-    if done then return end
-    browser:sendmessage(message)
-    menubrowser:close()
-    done = true
-  end)
-  menubrowser:oncloserequest(function () menubrowser:close() end)
+  if browserisgettingcoords then
+    -- a browser is already being sent coords, so this one can't
+    menubrowser:oncloserequest(function () menubrowser:close() end)
+    menubrowser:onmessage(function (message)
+      if done then return end
+      browser:sendmessage(message)
+      menubrowser:close()
+      done = true
+    end)
+  else
+    menubrowser:onmessage(function (message)
+      if done then return end
+      browserisgettingcoords = false
+      browser:sendmessage(message)
+      menubrowser:close()
+      done = true
+    end)
+    menubrowser:oncloserequest(function ()
+      browserisgettingcoords = false
+      updatecoordsinbrowser = updatecoordsnoop
+      menubrowser:close()
+    end)
+    updatecoordsinbrowser = function (x, y, z)
+      local buf = bolt.createbuffer(12)
+      buf:setuint32(0, x)
+      buf:setuint32(4, y)
+      buf:setuint32(8, z)
+      menubrowser:sendmessage(buf)
+    end
+    browserisgettingcoords = true
+    forceupdatecoords = true
+  end
 end
 
 -- todo: forge phoenix & divine forge phoenix???, divine carpet dust, guthixian butterfly, catalyst of alteration (bik book)
@@ -233,7 +268,7 @@ local messagehandlers = {
 
   [4] = function (message)
     -- open "add rule" menu
-    opentempbrowser(270, 450, "plugin://app/dist/rule.html?" .. string.sub(message, 3))
+    opentempbrowser(270, 480, "plugin://app/dist/rule.html?" .. string.sub(message, 3))
   end,
 
   [5] = function (message)
@@ -292,6 +327,13 @@ local messagehandlers = {
         local ref = readoptional(readstring)
         local comparator = readoptional(readstring)
         local find = readoptional(readstring)
+        local regionx1 = readoptional(readint)
+        local regionx2 = readoptional(readint)
+        local regiony1 = readoptional(readint)
+        local regiony2 = readoptional(readint)
+        local regionh1 = readoptional(readint)
+        local regionh2 = readoptional(readint)
+        local regionisinside = readoptional(readbool)
 
         if ref then
           if type == 'model' then
@@ -309,8 +351,12 @@ local messagehandlers = {
           threshold = threshold / 100.0
         end
 
-        rules[ruleindex] = { id = ruleid, paused = rulepaused, ruleset = ruleset, type = type, alert = alert, threshold = threshold, ref = ref, comparator = comparator, find = find }
+        rules[ruleindex] = {
+          id = ruleid, paused = rulepaused, ruleset = ruleset, type = type, alert = alert, threshold = threshold, ref = ref, comparator = comparator, find = find,
+          regionx1 = regionx1, regionx2 = regionx2, regiony1 = regiony1, regiony2 = regiony2, regionh1 = regionh1, regionh2 = regionh2, regionisinside = regionisinside,
+        }
         ruleindex = ruleindex + 1
+        forceupdatecoords = true
       end
       rulesets[i] = ruleset
     end
@@ -1072,6 +1118,10 @@ local endcheckframe = function (t)
   craftingprogress = nil
 end
 
+local lastknownposx = 0
+local lastknownposy = 0
+local lastknownposz = 0
+
 bolt.onswapbuffers(function (event)
   any3dobjectexists = any3dobjectfound
   any3dobjectfound = false
@@ -1081,6 +1131,36 @@ bolt.onswapbuffers(function (event)
 
   nextrender2dbuff = nil
   nextrender2ddebuff = nil
+
+  local worldpoint = bolt.playerposition()
+  if worldpoint then
+    local x, y, z = worldpoint:get()
+    local xmod = math.floor(x / unitspertile)
+    local ymod = math.floor(y)
+    local zmod = math.floor(z / unitspertile)
+    if (forceupdatecoords or xmod ~= lastknownposx or ymod ~= lastknownposy or zmod ~= lastknownposz) and x > 1 and z > 1 then
+      forceupdatecoords = false
+      lastknownposx = xmod
+      lastknownposy = ymod
+      lastknownposz = zmod
+      updatecoordsinbrowser(xmod, ymod, zmod)
+      
+      for _, rule in ipairs(rules) do
+        if rule.type == "position" then
+          local insideheight = true
+          if rule.regionh1 ~= nil and rule.regionh2 ~= nil then
+            insideheight = ymod >= rule.regionh1 and ymod <= rule.regionh2
+          end
+          local inside = xmod >= rule.regionx1 and xmod <= rule.regionx2 and zmod >= rule.regiony1 and zmod <= rule.regiony2 and insideheight
+          if (inside and rule.regionisinside) or (not inside and not rule.regionisinside) then
+            alertbyrule(rule)
+          else
+            setrulealertstate(rule, false)
+          end
+        end
+      end
+    end
+  end
 
   local t = bolt.time()
   if checkframe then

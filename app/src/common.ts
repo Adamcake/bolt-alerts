@@ -9,6 +9,7 @@ export const getInitialAlertState = (
     case RuleType.buff:
     case RuleType.craftingprogress:
     case RuleType.model:
+    case RuleType.position:
     case RuleType.stat:
       return false;
     case RuleType.chat:

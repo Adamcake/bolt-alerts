@@ -5,6 +5,14 @@
     let numberParam = params.get('number');
     let exactText = params.get('exacttext');
 
+    let regionX1Param = params.get('region_x1');
+    let regionX2Param = params.get('region_x2');
+    let regionY1Param = params.get('region_y1');
+    let regionY2Param = params.get('region_y2');
+    let regionH1Param = params.get('region_h1');
+    let regionH2Param = params.get('region_h2');
+    let regionIsInsideParam = params.get('region_is_inside');
+
     let id: string | null = params.get('id');
     let rulesetId: string = params.get('ruleset_id')!;
     let ruleType: RuleType | null = ruleTypeParam ? (ruleTypeParam as RuleType) : null;
@@ -13,11 +21,27 @@
     let comparator: string | null = params.get('comparator');
     let find: string | null = params.get('find');
 
+    let regionX1: number | null = regionX1Param ? parseInt(regionX1Param) : null;
+    let regionX2: number | null = regionX2Param ? parseInt(regionX2Param) : null;
+    let regionY1: number | null = regionY1Param ? parseInt(regionY1Param) : null;
+    let regionY2: number | null = regionY2Param ? parseInt(regionY2Param) : null;
+    let regionH1: number | null = regionH1Param ? parseInt(regionH1Param) : null;
+    let regionH2: number | null = regionH2Param ? parseInt(regionH2Param) : null;
+    let regionHeightConstrained: boolean = (regionH1 !== null && regionH2 !== null);
+    let regionIsInside: boolean | null = (regionIsInsideParam !== null) ? (regionIsInsideParam !== '0') : null;
+
     let afkTimeoutValue: number;
     let matchTypeIsExact: boolean = find === null || exactText !== null;
     let findExactValue: string = exactText ?? '';
     let xpGainModeIsTimeout: boolean | null = null;
     let xpGainTimeoutValue: number;
+
+    interface Point3D {
+        x: number;
+        y: number;
+        z: number;
+    };
+    let lastKnownPlayerPosition: Point3D | null = null;
 
     if (ruleType === RuleType.afktimer && number) {
         afkTimeoutValue = Math.floor(number / 1000000.0);
@@ -33,7 +57,8 @@
         (ruleType === RuleType.model && ref !== null) ||
         (ruleType === RuleType.popup && find !== null) ||
         (ruleType === RuleType.stat && ref !== null && number !== null) ||
-        (ruleType === RuleType.xpgain && ((number !== null && xpGainModeIsTimeout === true) || xpGainModeIsTimeout === false));
+        (ruleType === RuleType.xpgain && ((number !== null && xpGainModeIsTimeout === true) || xpGainModeIsTimeout === false)) ||
+        (ruleType === RuleType.position && regionIsInside !== null && regionX1 !== null && regionX2 !== null && regionY1 !== null && regionY2 !== null && (!regionHeightConstrained || (regionH1 !== null && regionH2 !== null)));
 
     const onTypeChange = () => {
         switch (ruleType) {
@@ -97,11 +122,28 @@
         if (comparator) params['comparator'] = comparator;
         if (find) params['find'] = find;
         if (matchTypeIsExact) params['exacttext'] = findExactValue;
+        if (regionX1) params['region_x1'] = regionX1.toString();
+        if (regionX2) params['region_x2'] = regionX2.toString();
+        if (regionY1) params['region_y1'] = regionY1.toString();
+        if (regionY2) params['region_y2'] = regionY2.toString();
+        if (regionH1 && regionHeightConstrained) params['region_h1'] = regionH1.toString();
+        if (regionH2 && regionHeightConstrained) params['region_h2'] = regionH2.toString();
+        if (regionIsInside !== null) params['region_is_inside'] = regionIsInside ? '1' : '0';
         return '\x02\x00'.concat(new URLSearchParams(params).toString());
     }
 
     const save = () => fetch("https://bolt-api/send-message", {method: 'POST', body: getPostBody()});
     const cancel = () => fetch("https://bolt-api/close-request");
+
+    window.addEventListener('message', (event) => {
+        if (!event.data || typeof(event.data) !== 'object' || event.data.type !== 'pluginMessage') return;
+        const coordsArray = new Uint32Array(event.data.content);
+        lastKnownPlayerPosition = {
+            x: coordsArray[0],
+            y: coordsArray[1],
+            z: coordsArray[2],
+        };
+    });
 </script>
 
 <div class="mx-2 my-1 p-0 b-0 text-gray-200">
@@ -121,6 +163,7 @@
             <option class="text-black" value={RuleType.chat}>Chat text</option>
             <option class="text-black" value={RuleType.craftingprogress}>Crafting progress</option>
             <option class="text-black" value={RuleType.model}>3D object</option>
+            <option class="text-black" value={RuleType.position}>Player position</option>
             <option class="text-black" value={RuleType.popup}>Popup text</option>
             <option class="text-black" value={RuleType.stat}>Stat bars</option>
             <option class="text-black" value={RuleType.xpgain}>XP gain</option>
@@ -325,6 +368,42 @@
                     onchange={() => number = Math.floor(xpGainTimeoutValue * 1000000)}
                 />
             {/if}
+        {:else if ruleType === RuleType.position}
+            <label for="e">Alert when player is:</label>
+            <br />
+            <select id="e" bind:value={regionIsInside} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
+                <option class="text-black" value={true}>inside</option>
+                <option class="text-black" value={false}>outside</option>
+            </select>
+            <br />
+            this region: (inclusive)
+            <br />
+            <span>
+                X:
+                <input type="number" bind:value={regionX1} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+                to
+                <input type="number" bind:value={regionX2} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+            </span>
+            <br />
+            <span>
+                Y:
+                <input type="number" bind:value={regionY1} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+                to
+                <input type="number" bind:value={regionY2} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+            </span>
+            <br />
+            <br />
+            <label for="f">Also check height:</label>
+            <input type="checkbox" bind:checked={regionHeightConstrained} />
+            <br />
+            {#if regionHeightConstrained}
+                <span>
+                    H:
+                    <input type="number" bind:value={regionH1} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+                    to
+                    <input type="number" bind:value={regionH2} class="border-gray-200 text-[12pt] border-1 w-[40%] px-[3px] py-[2px] border-black focus:border-3 focus:px-[1px] focus:py-0" />
+                </span>
+            {/if}
         {/if}
     </div>
     <span>
@@ -335,4 +414,13 @@
             onclick={save}
         >Save</button>
     </span>
+    {#if ruleType === RuleType.position && lastKnownPlayerPosition !== null}
+        <br />
+        <br />
+        <div class="text-xs font-bold">
+            tile: x={lastKnownPlayerPosition.x}, y={lastKnownPlayerPosition.z}
+            <br />
+            height: {lastKnownPlayerPosition.y}
+        </div>
+    {/if}
 </div>
