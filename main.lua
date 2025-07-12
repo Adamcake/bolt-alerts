@@ -475,6 +475,13 @@ local render3dlookup = {
     return nil
   end,
 
+  [1239] = function (event)
+    -- runesphere (not the core, as that's a billboard)
+    local x, y, z = event:vertexpoint(1):get()
+    if x == 215 and y == 350 and z == 0 then return models.runesphere end
+    return nil
+  end,
+
   [1248] = function (event)
     -- divine fire spirit
     local x, y, z = event:vertexpoint(1):get()
