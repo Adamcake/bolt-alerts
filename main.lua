@@ -79,15 +79,19 @@ local opentempbrowser = function (width, height, url)
   menubrowser:oncloserequest(function () menubrowser:close() end)
 end
 
--- todo: divine blessing (brooch), chronicle fragment (divination), elder chronicle (divination), forge phoenix & divine forge phoenix???,
--- divine carpet dust, guthixian butterfly, catalyst of alteration (bik book)
+-- todo: forge phoenix & divine forge phoenix???, divine carpet dust, guthixian butterfly, catalyst of alteration (bik book)
 local models = {
+  -- 3d
   lostsoul = {center = bolt.point(0, 600, 0), boxsize = 370, boxthickness = 115}, -- lost/unstable/vengeful
   penguinagent = {center = bolt.point(0, 200, 0), boxsize = 450, boxthickness = 120}, -- 001 through 007, but not the disguised ones
   serenspirit = {center = bolt.point(0, 350, 0), boxsize = 400, boxthickness = 100},
   firespirit = {center = bolt.point(0, 300, 0), boxsize = 310, boxthickness = 105}, -- normal and divine
   eliteslayermob = {center = bolt.point(0, 150, 0), boxsize = 500, boxthickness = 120}, -- the white ring around all elite slayer mobs
   manifestedknowledge = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true},
+  chroniclefragment = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true}, -- also elder chronicle
+
+  -- billboard
+  divineblessing = {center = bolt.point(0, 520, 0), boxsize = 300, boxthickness = 90},
 }
 
 -- both buffs and debuffs go in this table
@@ -403,6 +407,9 @@ local render3dlookup = {
     local anim = event:animated()
     local x, y, z = event:vertexpoint(1):get()
     if anim and x == -44 and y == 589 and z == -33 then return models.manifestedknowledge end
+    -- could differentiate between chronicle fragment and elder chronicle here based on vertex colour,
+    -- but I don't expect anyone wants that
+    if anim and x == -46 and y == 594 and z == -230 then return models.chroniclefragment end
     return nil
   end,
 
@@ -442,6 +449,16 @@ local render3dlookup = {
   [27171] = function (event)
     local x, y, z = event:vertexpoint(1):get()
     if x == -35 and y == 329 and z == -33 then return models.penguinagent end
+    return nil
+  end,
+}
+
+local anybillboardexists = false
+local anybillboardfound = false
+local renderbillboardlookup = {
+  [552] = function (event)
+    local r, g, b = event:vertexcolour(1)
+    if rougheqrgb(r, g, b, 127, 120, 52) then return models.divineblessing, nil end
     return nil
   end,
 }
@@ -897,6 +914,33 @@ bolt.onrender3d(function (event)
   end
 end)
 
+-- this check is for compat as this handler was added shortly after 0.18 stable release
+-- so probably delete this check later
+if bolt.onrenderbillboard then
+  bolt.onrenderbillboard(function (event)
+    if not (checkframe or anybillboardexists) then return end
+    local f = renderbillboardlookup[event:vertexcount()]
+    if f ~= nil then
+      local model = f(event)
+      if model and model.dohighlight then
+        anybillboardfound = true
+        if (bolt.time() % 600000) <= 480000 then
+          local m = model.center
+          drawbox(m:transform(event:modelmatrix()), event:viewmatrix(), event:projectionmatrix(), model.boxsize, model.boxthickness)
+        end
+        if checkframe then
+          model.foundoncheckframe = true
+          for _, rule in ipairs(rules) do
+            if rule.type == "model" and rule.ref == model then
+              alertbyrule(rule)
+            end
+          end
+        end
+      end
+    end
+  end)
+end
+
 bolt.onrendericon(function (event)
   if not checkframe then return end
   local modelcount = event:modelcount()
@@ -1009,6 +1053,10 @@ end
 bolt.onswapbuffers(function (event)
   any3dobjectexists = any3dobjectfound
   any3dobjectfound = false
+
+  anybillboardexists = anybillboardfound
+  anybillboardfound = false
+
   nextrender2dbuff = nil
   nextrender2ddebuff = nil
 

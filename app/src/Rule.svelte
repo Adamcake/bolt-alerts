@@ -277,6 +277,8 @@
             <label for="9">Model:</label>
             <br>
             <select id="9" bind:value={ref} class="border-1 px-[3px] py-[2px] border-white text-white text-[10pt] focus:border-3 focus:px-[1px] focus:py-0">
+                <option class="text-black" value="chroniclefragment">Chronicle Fragment</option>
+                <option class="text-black" value="divineblessing">Divine blessing</option>
                 <option class="text-black" value="lostsoul">Elidinis spirits</option>
                 <option class="text-black" value="eliteslayermob">Elite slayer mobs</option>
                 <option class="text-black" value="firespirit">Fire spirits</option>
