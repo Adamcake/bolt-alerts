@@ -236,6 +236,7 @@
                     <option value="noritualshard">Elven Ritual Shard Cooldown</option>
                     <option value="noexcalibur">Excalibur Cooldown</option>
                     <option value="firelighter">Firelighter</option>
+                    <option value="giftoffriendship">Gift of Friendship</option>
                     <option value="godbook">God Book</option>
                     <option value="grimoire">Grimoire</option>
                     <option value="hispecmonocle">Hi-spec Monocle</option>
