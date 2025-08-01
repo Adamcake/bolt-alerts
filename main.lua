@@ -348,6 +348,11 @@ local messagehandlers = {
           end
         end
 
+        -- Remove whitesppace from to-be-found text (atm chat does not detect whitespace, popup does)
+        if find then
+          find = string.gsub(find, "%s+", "")
+        end
+
         if type == 'craftingprogress' or type == 'stat' then
           threshold = threshold / 100.0
         end
@@ -927,6 +932,8 @@ bolt.onrender2d(function (event)
         if p then
           local message = modules.popup:tryreadpopup(event, i + verticesperimage)
           if message then
+            -- Remove whitespace from popup message to align with chat detection
+            message = string.gsub(message, "%s+", "")
             popupfound = true
             if message ~= lastpopupmessage then
               lastpopupmessage = message
