@@ -994,32 +994,28 @@ bolt.onrender3d(function (event)
   end
 end)
 
--- this check is for compat as this handler was added shortly after 0.18 stable release
--- so probably delete this check later
-if bolt.onrenderbillboard then
-  bolt.onrenderbillboard(function (event)
-    if not (checkframe or anybillboardexists) then return end
-    local f = renderbillboardlookup[event:vertexcount()]
-    if f ~= nil then
-      local model = f(event)
-      if model and model.dohighlight then
-        anybillboardfound = true
-        if (bolt.time() % 600000) <= 480000 then
-          local m = model.center
-          drawbox(m:transform(event:modelmatrix()), event:viewmatrix(), event:projectionmatrix(), model.boxsize, model.boxthickness)
-        end
-        if checkframe then
-          model.foundoncheckframe = true
-          for _, rule in ipairs(rules) do
-            if rule.type == "model" and rule.ref == model then
-              alertbyrule(rule)
-            end
+bolt.onrenderbillboard(function (event)
+  if not (checkframe or anybillboardexists) then return end
+  local f = renderbillboardlookup[event:vertexcount()]
+  if f ~= nil then
+    local model = f(event)
+    if model and model.dohighlight then
+      anybillboardfound = true
+      if (bolt.time() % 600000) <= 480000 then
+        local m = model.center
+        drawbox(m:transform(event:modelmatrix()), event:viewmatrix(), event:projectionmatrix(), model.boxsize, model.boxthickness)
+      end
+      if checkframe then
+        model.foundoncheckframe = true
+        for _, rule in ipairs(rules) do
+          if rule.type == "model" and rule.ref == model then
+            alertbyrule(rule)
           end
         end
       end
     end
-  end)
-end
+  end
+end)
 
 bolt.onrendericon(function (event)
   if not checkframe then return end
