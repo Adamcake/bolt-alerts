@@ -240,6 +240,7 @@
                     <option value="godbook">God Book</option>
                     <option value="grimoire">Grimoire</option>
                     <option value="hispecmonocle">Hi-spec Monocle</option>
+                    <option value="knowledgebomb">Knowledge Bomb</option>
                     <option value="loveletter">Love Letter</option>
                     <option value="luminiteinjector">Luminite Injector</option>
                     <option value="materialmanual">Material Manual</option>
@@ -331,6 +332,7 @@
                 <option class="text-black" value="runesphere">Runesphere</option>
                 <option class="text-black" value="runespherecore">Runesphere core</option>
                 <option class="text-black" value="serenspirit">Seren spirits</option>
+                <option class="text-black" value="temporalinstability">Temporal instability</option>
             </select>
         {:else if ruleType === RuleType.stat}
             <label for="a">Stat:</label>
