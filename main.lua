@@ -129,7 +129,7 @@ local models = {
   -- billboard
   divineblessing = {center = bolt.point(0, 520, 0), boxsize = 300, boxthickness = 90},
   runespherecore = {center = bolt.point(0, 340, 0), boxsize = 350, boxthickness = 120},
-  temporalinstability = {center = bolt.point(0, 120, 0), boxsize = 300, boxthickness = 80}, -- things that appear near anachronia remototem
+  temporalinstability = {center = bolt.point(0, 340, 0), boxsize = 300, boxthickness = 90}, -- things that appear near anachronia remototem
 }
 
 -- both buffs and debuffs go in this table
@@ -528,21 +528,21 @@ local render3dlookup = {
 local anybillboardexists = false
 local anybillboardfound = false
 local renderbillboardlookup = {
-  [60] = function (event)
+  [66] = function (event)
     local r, g, b = event:vertexcolour(1)
-    if rougheqrgb(r, g, b, 17, 17, 33) then return models.temporalinstability, nil end
+    if rougheqrgb(r, g, b, 239, 237, 59) then return models.runespherecore end
     return nil
   end,
 
-  [66] = function (event)
+  [360] = function (event)
     local r, g, b = event:vertexcolour(1)
-    if rougheqrgb(r, g, b, 239, 237, 59) then return models.runespherecore, nil end
+    if rougheqrgb(r, g, b, 17, 17, 33) then return models.temporalinstability end
     return nil
   end,
 
   [552] = function (event)
     local r, g, b = event:vertexcolour(1)
-    if rougheqrgb(r, g, b, 127, 120, 52) then return models.divineblessing, nil end
+    if rougheqrgb(r, g, b, 127, 120, 52) then return models.divineblessing end
     return nil
   end,
 }
