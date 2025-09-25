@@ -866,14 +866,14 @@ bolt.onrender2d(function (event)
 
       if aw == ah then
         if aw == 11 then
-          if checkchat and event:texturecompare(ax, ay + 5, "\x00\x00\x01\xff\xc0\xd4\xd1\xff\xc0\xd4\xd1\xff\xd9\xe0\xde\xff\xc0\xd4\xd1\xff\xc0\xd4\xd1\xff\xc0\xd4\xd1\xff\xc0\xd4\xd1\xff\x9f\xd9\xce\xff\x9f\xd9\xce\xff\x00\x00\x01\xff") then
+          if checkchat and event:texturecompare(ax, ay + 5, '\x00\x00\x01\xff\xc4\xd0\xcd\xff\xc4\xd0\xcd\xff\xd9\xe0\xde\xff\xc4\xd0\xcd\xff\xc4\xd0\xcd\xff\xc4\xd0\xcd\xff\xc4\xd0\xcd\xff\x9f\xd9\xce\xff\x9f\xd9\xce\xff\x00\x00\x01\xff') then
             local ischat, isscrolled = modules.chat:tryreadchat(event, i + verticesperimage, mostrecentmessage, function (message)
               mostrecentmessage = message
-              if string.find(message, "^%[%d%d:%d%d:%d%d%]") then
-                local msg = string.sub(message, 11)
+              local _, _, strippedmessage = string.find(message, "^%[%d%d:%d%d:%d%d%](.+)")
+              if strippedmessage then
                 for _, rule in ipairs(rules) do
                   if rule.type == "chat" then
-                    if string.find(msg, rule.find) then
+                    if string.find(strippedmessage, rule.find) then
                       alertbyrule(rule)
                     end
                   end
