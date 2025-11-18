@@ -254,6 +254,7 @@
                     <option value="stoneofjas">Stone of Jas (glacor cavern)</option>
                     <option value="summon">Summon</option>
                     <option value="tarpaulinsheet">Tarpaulin Sheet</option>
+                    <option value="triplecharms">Triple Charms (Familiarisation)</option>
                     <option value="valentinesflip">Valentine's Flip</option>
                     <option value="valentinesslam">Valentine's Slam</option>
                     <option value="wiseperk">Wise Perk</option>

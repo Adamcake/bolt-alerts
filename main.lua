@@ -207,6 +207,7 @@ local buffs = {
   materialmanual = {},
   hispecmonocle = {},
   tarpaulinsheet = {},
+  triplecharms = {},
   archaeologiststea = {},
   giftoffriendship = {},
   knowledgebomb = {},
@@ -587,6 +588,12 @@ local rendericonlookup1 = {
   [240] = function (event)
     local x, y, z = event:modelvertexpoint(1, 1):get()
     if x == 68 and y == 184 and z == -60 then return buffs.cannonballs, buffs.cannontimer end
+    return nil, nil
+  end,
+
+  [270] = function (event)
+    local x, y, z = event:modelvertexpoint(1, 1):get()
+    if x == -62 and y == 16 and z == 7 then return buffs.triplecharms, nil end
     return nil, nil
   end,
 
