@@ -125,6 +125,7 @@ local models = {
   manifestedknowledge = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true},
   chroniclefragment = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true}, -- also elder chronicle
   runesphere = {center = bolt.point(0, 490, 0), boxsize = 350, boxthickness = 120, anim = true}, -- doesn't include the core (see runespherecore)
+  divinecarpetdust = {center = bolt.point(0, 580, 0), boxsize = 200, boxthickness = 60, anim = true},
 
   -- billboard
   divineblessing = {center = bolt.point(0, 520, 0), boxsize = 300, boxthickness = 90},
@@ -463,6 +464,14 @@ local render3dlookup = {
     -- could differentiate between chronicle fragment and elder chronicle here based on vertex colour,
     -- but I don't expect anyone wants that
     if anim and x == -46 and y == 594 and z == -230 then return models.chroniclefragment end
+    return nil
+  end,
+
+  [156] = function (event)
+    -- divine carpet dust
+    local anim = event:animated()
+    local x, y, z = event:vertexpoint(1):get()
+    if anim and x == -44 and y == 589 and z == -33 then return models.divinecarpetdust end
     return nil
   end,
 
