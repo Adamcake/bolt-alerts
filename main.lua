@@ -143,6 +143,7 @@ local buffs = {
   antifire = {},
   aggressionpotion = {},
   spiritattractionpotion = {},
+  charmingpotion = {},
   noadrenalinepotion = {},
   nopowerburst = {},
 
@@ -763,6 +764,7 @@ local rendericonlookup2 = {
       if not (x == -20 and y == 84 and z == 4) then return nil, nil end
       local r, g, b, _ = event:modelvertexcolour(2, 49)
       if rougheqrgb(r, g, b, 94, 8, 60) then return buffs.aggressionpotion, nil end
+      if rougheqrgb(r, g, b, 150, 115, 134) then return buffs.charmingpotion, nil end
     end
     return nil, nil
   end,

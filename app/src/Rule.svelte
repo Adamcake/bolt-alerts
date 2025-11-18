@@ -188,6 +188,7 @@
                     <option value="aggressionpotion">Aggression Potion</option>
                     <option value="antifire">Antifire</option>
                     <option value="antipoison">Antipoison</option>
+                    <option value="charmingpotion">Charming Potion</option>
                     <option value="overload">Overload</option>
                     <option value="perfectplus">Perfect Plus</option>
                     <option value="poisonous">Poisonous</option>
