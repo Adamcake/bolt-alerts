@@ -1,3 +1,6 @@
+# ⚠️⚠️⚠️
+Migrated to codeberg. Don't use this. use https://codeberg.org/Adamcake/bolt-alerts instead.
+
 # Bolt Alerter
 A configurable plugin for [Bolt Launcher](https://bolt.adamcake.com/) which can alert you when various things happen in-game.
 
